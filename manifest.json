@@ -1,0 +1,18 @@
+{
+  "name": "The Eight Instructions",
+  "short_name": "8 Instructions",
+  "description": "A practical guide for restructuring your life from the inside out",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%230a0a0f'/><text x='256' y='320' font-size='280' font-family='Georgia,serif' fill='%23c8a050' text-anchor='middle'>8</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
