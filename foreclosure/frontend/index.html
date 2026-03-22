@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Foreclosure data aggregation platform with analytics, investment tools, and predictive modeling">
+  <title>ForeclosureIQ - Smarter Foreclosure Investing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1 class="logo">Foreclosure<span>IQ</span></h1>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-tab active" data-view="search">Search</button>
+        <button class="nav-tab" data-view="map">Map</button>
+        <button class="nav-tab" data-view="analytics">Analytics</button>
+        <button class="nav-tab" data-view="deals">Best Deals</button>
+        <button class="nav-tab" data-view="auctions">Auctions</button>
+        <button class="nav-tab" data-view="alerts">Alerts</button>
+        <button class="nav-tab" data-view="pipeline">Data Sources</button>
+      </nav>
+      <div class="header-right">
+        <div class="stat-pill" id="totalCount">-- properties</div>
+      </div>
+    </header>
+
+    <!-- Search View -->
+    <section class="view active" id="view-search">
+      <div class="search-panel">
+        <div class="search-filters">
+          <div class="filter-row">
+            <input type="text" id="filterCity" placeholder="City" class="filter-input">
+            <select id="filterState" class="filter-select">
+              <option value="">All States</option>
+            </select>
+            <input type="text" id="filterZip" placeholder="ZIP" class="filter-input filter-sm">
+            <select id="filterStage" class="filter-select">
+              <option value="">All Stages</option>
+              <option value="pre_foreclosure">Pre-Foreclosure</option>
+              <option value="auction">Auction</option>
+              <option value="reo">REO / Bank Owned</option>
+            </select>
+          </div>
+          <div class="filter-row">
+            <select id="filterType" class="filter-select">
+              <option value="">All Types</option>
+              <option value="single_family">Single Family</option>
+              <option value="condo">Condo</option>
+              <option value="townhouse">Townhouse</option>
+              <option value="multi_family">Multi-Family</option>
+            </select>
+            <input type="number" id="filterMinPrice" placeholder="Min Price" class="filter-input">
+            <input type="number" id="filterMaxPrice" placeholder="Max Price" class="filter-input">
+            <input type="number" id="filterMinBeds" placeholder="Min Beds" class="filter-input filter-sm">
+            <input type="number" id="filterMinBaths" placeholder="Min Baths" class="filter-input filter-sm">
+            <button id="searchBtn" class="btn btn-primary">Search</button>
+            <button id="resetBtn" class="btn btn-ghost">Reset</button>
+          </div>
+        </div>
+        <div class="search-meta">
+          <span id="resultCount">0 results</span>
+          <select id="sortBy" class="filter-select filter-sm">
+            <option value="created_at">Newest</option>
+            <option value="listing_price">Price</option>
+            <option value="auction_date">Auction Date</option>
+            <option value="sqft">Size</option>
+          </select>
+        </div>
+      </div>
+      <div class="results-grid" id="searchResults"></div>
+      <div class="pagination" id="pagination"></div>
+    </section>
+
+    <!-- Map View -->
+    <section class="view" id="view-map">
+      <div id="mapContainer" style="height: calc(100vh - 60px);"></div>
+    </section>
+
+    <!-- Analytics View -->
+    <section class="view" id="view-analytics">
+      <div class="analytics-grid">
+        <div class="stat-card large">
+          <div class="stat-label">Total Properties</div>
+          <div class="stat-value" id="statTotal">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Added This Week</div>
+          <div class="stat-value" id="statRecent">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Upcoming Auctions (30d)</div>
+          <div class="stat-value" id="statAuctions">--</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-label">Avg. Discount from Value</div>
+          <div class="stat-value" id="statDiscount">--</div>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>By Foreclosure Stage</h3>
+          <div id="chartStage" class="chart-bars"></div>
+        </div>
+        <div class="chart-card">
+          <h3>By State (Top 15)</h3>
+          <div id="chartState" class="chart-bars"></div>
+        </div>
+        <div class="chart-card">
+          <h3>By Property Type</h3>
+          <div id="chartType" class="chart-bars"></div>
+        </div>
+      </div>
+      <!-- State drill-down -->
+      <div class="state-drill" id="stateDrill" style="display:none;">
+        <h3>State Detail: <span id="drillStateName"></span></h3>
+        <div id="drillContent"></div>
+      </div>
+    </section>
+
+    <!-- Best Deals View -->
+    <section class="view" id="view-deals">
+      <h2 class="view-title">Best Deals - Highest Discount from Estimated Value</h2>
+      <div class="results-grid" id="dealsResults"></div>
+    </section>
+
+    <!-- Auctions View -->
+    <section class="view" id="view-auctions">
+      <h2 class="view-title">Upcoming Auctions</h2>
+      <div class="auction-controls">
+        <select id="auctionDays" class="filter-select">
+          <option value="7">Next 7 Days</option>
+          <option value="14">Next 14 Days</option>
+          <option value="30" selected>Next 30 Days</option>
+          <option value="60">Next 60 Days</option>
+        </select>
+      </div>
+      <div class="results-grid" id="auctionResults"></div>
+    </section>
+
+    <!-- Alerts View -->
+    <section class="view" id="view-alerts">
+      <h2 class="view-title">Saved Alerts</h2>
+      <div class="alert-form">
+        <input type="text" id="alertName" placeholder="Alert name" class="filter-input">
+        <input type="email" id="alertEmail" placeholder="Email (optional)" class="filter-input">
+        <p class="hint">Alert will use your current search filters. Set filters on the Search tab first.</p>
+        <button id="createAlertBtn" class="btn btn-primary">Create Alert</button>
+      </div>
+      <div id="alertsList" class="alerts-list"></div>
+    </section>
+
+    <!-- Pipeline/Data Sources View -->
+    <section class="view" id="view-pipeline">
+      <h2 class="view-title">Data Sources & Pipeline</h2>
+      <div id="sourcesList" class="sources-grid"></div>
+      <h3 style="margin-top:2rem;">Recent Pipeline Runs</h3>
+      <div id="pipelineRuns" class="pipeline-runs"></div>
+    </section>
+
+    <!-- Property Detail Modal -->
+    <div class="modal-overlay" id="propertyModal">
+      <div class="modal">
+        <button class="modal-close" id="modalClose">&times;</button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <!-- ROI Calculator Modal -->
+    <div class="modal-overlay" id="roiModal">
+      <div class="modal modal-sm">
+        <button class="modal-close" id="roiClose">&times;</button>
+        <h2>ROI Calculator</h2>
+        <div id="roiContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
