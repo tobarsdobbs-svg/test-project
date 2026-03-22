@@ -33,7 +33,8 @@ app.get('*', (req, res) => {
 
 // Initialize DB and start
 db.exec('PRAGMA journal_mode=WAL');
-console.log(`Foreclosure Data Aggregator running on http://localhost:${PORT}`);
-app.listen(PORT);
+const HOST = process.env.HOST || '0.0.0.0';
+console.log(`Foreclosure Data Aggregator running on http://${HOST}:${PORT}`);
+app.listen(PORT, HOST);
 
 module.exports = app;
