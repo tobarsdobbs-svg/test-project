@@ -6,18 +6,18 @@ const Property = {
     const conditions = [];
     const params = {};
 
-    if (state) { conditions.push('state = $state'); params.$state = state; }
-    if (city) { conditions.push('city LIKE $city'); params.$city = `%${city}%`; }
-    if (zip) { conditions.push('zip = $zip'); params.$zip = zip; }
-    if (county) { conditions.push('county LIKE $county'); params.$county = `%${county}%`; }
-    if (stage) { conditions.push('foreclosure_stage = $stage'); params.$stage = stage; }
-    if (propertyType) { conditions.push('property_type = $type'); params.$type = propertyType; }
-    if (minPrice) { conditions.push('(listing_price >= $minPrice OR auction_min_bid >= $minPrice)'); params.$minPrice = minPrice; }
-    if (maxPrice) { conditions.push('(listing_price <= $maxPrice OR auction_min_bid <= $maxPrice)'); params.$maxPrice = maxPrice; }
-    if (minBeds) { conditions.push('bedrooms >= $minBeds'); params.$minBeds = minBeds; }
-    if (minBaths) { conditions.push('bathrooms >= $minBaths'); params.$minBaths = minBaths; }
-    if (minSqft) { conditions.push('sqft >= $minSqft'); params.$minSqft = minSqft; }
-    if (auctionBefore) { conditions.push('auction_date <= $auctionBefore'); params.$auctionBefore = auctionBefore; }
+    if (state) { conditions.push('state = $state'); params.state = state; }
+    if (city) { conditions.push('city LIKE $city'); params.city = `%${city}%`; }
+    if (zip) { conditions.push('zip = $zip'); params.zip = zip; }
+    if (county) { conditions.push('county LIKE $county'); params.county = `%${county}%`; }
+    if (stage) { conditions.push('foreclosure_stage = $stage'); params.stage = stage; }
+    if (propertyType) { conditions.push('property_type = $type'); params.type = propertyType; }
+    if (minPrice) { conditions.push('(listing_price >= $minPrice OR auction_min_bid >= $minPrice)'); params.minPrice = minPrice; }
+    if (maxPrice) { conditions.push('(listing_price <= $maxPrice OR auction_min_bid <= $maxPrice)'); params.maxPrice = maxPrice; }
+    if (minBeds) { conditions.push('bedrooms >= $minBeds'); params.minBeds = minBeds; }
+    if (minBaths) { conditions.push('bathrooms >= $minBaths'); params.minBaths = minBaths; }
+    if (minSqft) { conditions.push('sqft >= $minSqft'); params.minSqft = minSqft; }
+    if (auctionBefore) { conditions.push('auction_date <= $auctionBefore'); params.auctionBefore = auctionBefore; }
 
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
     const validSorts = ['listing_price', 'auction_date', 'created_at', 'sqft', 'estimated_value'];
@@ -101,8 +101,8 @@ const Property = {
       byStage: db.prepare('SELECT foreclosure_stage as stage, COUNT(*) as count FROM properties GROUP BY foreclosure_stage').all(),
       byState: db.prepare('SELECT state, COUNT(*) as count FROM properties GROUP BY state ORDER BY count DESC LIMIT 20').all(),
       byType: db.prepare('SELECT property_type as type, COUNT(*) as count FROM properties GROUP BY property_type').all(),
-      recentlyAdded: db.prepare('SELECT COUNT(*) as c FROM properties WHERE created_at >= datetime("now", "-7 days")').get().c,
-      upcomingAuctions: db.prepare('SELECT COUNT(*) as c FROM properties WHERE auction_date >= date("now") AND auction_date <= date("now", "+30 days")').get().c,
+      recentlyAdded: db.prepare("SELECT COUNT(*) as c FROM properties WHERE created_at >= datetime('now', '-7 days')").get().c,
+      upcomingAuctions: db.prepare("SELECT COUNT(*) as c FROM properties WHERE auction_date >= date('now') AND auction_date <= date('now', '+30 days')").get().c,
       avgDiscount: db.prepare('SELECT AVG(CASE WHEN estimated_value > 0 AND listing_price > 0 THEN ((estimated_value - listing_price) / estimated_value) * 100 END) as avg FROM properties').get().avg,
     };
   },

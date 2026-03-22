@@ -72,20 +72,20 @@ class BaseScraper {
         foreclosure_stage=excluded.foreclosure_stage, updated_at=datetime('now')
     `);
     return stmt.run({
-      $source: data.source, $source_id: data.source_id, $address: data.address,
-      $city: data.city, $state: data.state, $zip: data.zip || null,
-      $county: data.county || null, $latitude: data.latitude || null,
-      $longitude: data.longitude || null, $property_type: data.property_type || null,
-      $bedrooms: data.bedrooms || null, $bathrooms: data.bathrooms || null,
-      $sqft: data.sqft || null, $lot_size: data.lot_size || null,
-      $year_built: data.year_built || null, $assessed_value: data.assessed_value || null,
-      $estimated_value: data.estimated_value || null, $listing_price: data.listing_price || null,
-      $auction_date: data.auction_date || null, $auction_min_bid: data.auction_min_bid || null,
-      $foreclosure_stage: data.foreclosure_stage || 'unknown',
-      $filing_date: data.filing_date || null, $default_amount: data.default_amount || null,
-      $lender: data.lender || null, $trustee: data.trustee || null,
-      $case_number: data.case_number || null, $description: data.description || null,
-      $image_url: data.image_url || null,
+      source: data.source, source_id: data.source_id, address: data.address,
+      city: data.city, state: data.state, zip: data.zip || null,
+      county: data.county || null, latitude: data.latitude || null,
+      longitude: data.longitude || null, property_type: data.property_type || null,
+      bedrooms: data.bedrooms || null, bathrooms: data.bathrooms || null,
+      sqft: data.sqft || null, lot_size: data.lot_size || null,
+      year_built: data.year_built || null, assessed_value: data.assessed_value || null,
+      estimated_value: data.estimated_value || null, listing_price: data.listing_price || null,
+      auction_date: data.auction_date || null, auction_min_bid: data.auction_min_bid || null,
+      foreclosure_stage: data.foreclosure_stage || 'unknown',
+      filing_date: data.filing_date || null, default_amount: data.default_amount || null,
+      lender: data.lender || null, trustee: data.trustee || null,
+      case_number: data.case_number || null, description: data.description || null,
+      image_url: data.image_url || null,
     });
   }
 

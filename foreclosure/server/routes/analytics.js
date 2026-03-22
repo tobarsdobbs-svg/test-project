@@ -88,7 +88,7 @@ router.get('/auctions', (req, res) => {
     const state = req.query.state;
     const conditions = ["auction_date >= date('now')", `auction_date <= date('now', '+${days} days')`];
     const params = {};
-    if (state) { conditions.push('state = $state'); params.$state = state; }
+    if (state) { conditions.push('state = $state'); params.state = state; }
 
     const auctions = db.prepare(`
       SELECT * FROM properties
