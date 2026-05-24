@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pain Point Discovery Tool</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 24px 32px;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header p { opacity: 0.85; font-size: 14px; }
+
+  .tab-nav {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 14px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+  .form-group { margin-bottom: 18px; }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus { border-color: var(--primary); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-secondary { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-danger { background: #fef2f2; color: var(--danger); border: 1.5px solid #fecaca; }
+  .btn-danger:hover { background: #fee2e2; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .search-row { display: flex; gap: 10px; }
+  .search-row input { flex: 1; }
+
+  .link-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 20px 0 8px;
+  }
+
+  .research-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 600px) { .research-grid { grid-template-columns: 1fr; } }
+
+  .research-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    background: white;
+  }
+  .research-link:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+  .research-link .icon { font-size: 18px; flex-shrink: 0; }
+  .research-link .link-meta { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 1px; }
+  .research-link .arrow { margin-left: auto; color: #94a3b8; font-size: 12px; }
+
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  @media (max-width: 600px) { .tips-grid { grid-template-columns: 1fr; } }
+
+  .tip-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .tip-card .tip-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+
+  .score-section {
+    background: #f8faff;
+    border: 1.5px solid #dbeafe;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .score-section h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--primary); }
+
+  .criterion {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0eaff;
+  }
+  .criterion:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .criterion-q { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+
+  .score-options { display: flex; gap: 8px; }
+
+  .score-opt { flex: 1; position: relative; }
+  .score-opt input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+  .score-opt label {
+    display: block;
+    text-align: center;
+    padding: 8px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .score-opt.val-1 input:checked + label { border-color: var(--danger); background: #fff1f2; color: var(--danger); }
+  .score-opt.val-2 input:checked + label { border-color: var(--warning); background: #fffbeb; color: var(--warning); }
+  .score-opt.val-3 input:checked + label { border-color: var(--success); background: #f0fdf4; color: var(--success); }
+
+  .score-display {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    margin-top: 16px;
+  }
+  .score-number { font-size: 40px; font-weight: 800; line-height: 1; }
+  .score-label { font-size: 12px; color: var(--muted); }
+  .score-verdict { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .score-high { color: var(--success); }
+  .score-medium { color: var(--warning); }
+  .score-low { color: var(--danger); }
+
+  .section-header { margin-bottom: 20px; }
+  .section-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .section-header p { font-size: 13px; color: var(--muted); }
+
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  .opp-card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .opp-card.high { border-left-color: var(--success); }
+  .opp-card.medium { border-left-color: var(--warning); }
+  .opp-card.low { border-left-color: var(--danger); }
+
+  .opp-score-badge { font-size: 26px; font-weight: 800; min-width: 44px; text-align: center; line-height: 1; padding-top: 2px; }
+  .high .opp-score-badge { color: var(--success); }
+  .medium .opp-score-badge { color: var(--warning); }
+  .low .opp-score-badge { color: var(--danger); }
+
+  .opp-body { flex: 1; min-width: 0; }
+  .opp-industry { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
+  .opp-problem { font-size: 14px; font-weight: 600; margin-bottom: 6px; line-height: 1.4; }
+  .opp-meta { font-size: 12px; color: var(--muted); }
+
+  .opp-actions { display: flex; gap: 6px; align-items: flex-start; flex-shrink: 0; }
+
+  .opp-detail {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .opp-detail.open { display: block; }
+  .detail-row { margin-bottom: 6px; }
+  .detail-label { font-weight: 600; color: var(--text); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge-high { background: #dcfce7; color: #166534; }
+  .badge-medium { background: #fef9c3; color: #854d0e; }
+  .badge-low { background: #fee2e2; color: #991b1b; }
+
+  .count-badge {
+    background: var(--primary);
+    color: white;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+  .empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .empty-state p { font-size: 13px; }
+
+  .script-output {
+    background: #f8faff;
+    border: 1.5px solid #dbeafe;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 16px;
+    display: none;
+  }
+  .script-output.visible { display: block; }
+
+  .question-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0eaff;
+  }
+  .question-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .q-num {
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .q-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .q-note { font-size: 12px; color: var(--muted); }
+
+  .tip {
+    background: #fffbeb;
+    border: 1.5px solid #fde68a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #78350f;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .tip strong { font-weight: 700; }
+
+  .score-breakdown { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .score-pip {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #f1f5f9;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Pain Point Discovery Tool</h1>
+  <p>Find, score, and prioritize problems worth building products for</p>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="research" onclick="switchTab(this)">🔍 Research Hub</button>
+  <button class="tab-btn" data-tab="add" onclick="switchTab(this)">➕ Add Pain Point</button>
+  <button class="tab-btn" data-tab="opportunities" onclick="switchTab(this)">📊 Opportunities <span class="count-badge" id="opp-count">0</span></button>
+  <button class="tab-btn" data-tab="interview" onclick="switchTab(this)">🎙️ Interview Script</button>
+</div>
+
+<div class="content">
+
+  <!-- TAB 1: RESEARCH HUB -->
+  <div class="tab-panel active" id="tab-research">
+    <div class="section-header">
+      <h2>Research Hub</h2>
+      <p>Enter an industry or keyword to generate targeted search links across the best sources for finding pain points.</p>
+    </div>
+
+    <div class="card">
+      <div class="search-row">
+        <input type="text" id="research-keyword" placeholder="e.g. auto recycling, HVAC contractors, freelance photographers..." oninput="generateLinks()">
+        <button class="btn btn-primary" onclick="generateLinks()">Generate Links</button>
+      </div>
+      <div id="research-links">
+        <div class="tip" style="margin-top:14px;">
+          <strong>How to use:</strong> Type an industry above to generate one-click search links across Reddit, software review sites, job boards, and Google — each pre-built to surface complaints, workarounds, and missing features that signal a real problem worth building for.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📚 What to look for at any source</div>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-title">🔴 High-value complaint signals</div>
+          "I can't believe there's no tool for..."<br>
+          "Does anyone know a good way to..."<br>
+          "I've been doing this manually for years"
+        </div>
+        <div class="tip-card">
+          <div class="tip-title">📋 The spreadsheet test</div>
+          If people track something in a spreadsheet that they wish was automated — that's a product. Ask: "What do you do manually that drives you crazy?"
+        </div>
+        <div class="tip-card">
+          <div class="tip-title">💼 The job ad test</div>
+          Companies hiring humans for repetitive tasks = automation opportunity. Search for "data entry," "manual tracking," "spreadsheet coordinator" in any industry.
+        </div>
+        <div class="tip-card">
+          <div class="tip-title">⭐ Software review mining</div>
+          Filter G2/Capterra for 2–3 star reviews. People say exactly what's missing. "Great but doesn't have X" = your next product idea.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: ADD PAIN POINT -->
+  <div class="tab-panel" id="tab-add">
+    <div class="section-header">
+      <h2>Capture a Pain Point</h2>
+      <p>Document what you found and run it through the decision framework to get a score.</p>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Industry / Niche</label>
+        <input type="text" id="f-industry" placeholder="e.g. Auto Recycling, Real Estate Investing, HVAC...">
+      </div>
+      <div class="form-group">
+        <label>Describe the pain point</label>
+        <textarea id="f-problem" placeholder="What's the pain? Who experiences it? How often? The more specific, the better."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Source</label>
+        <select id="f-source">
+          <option value="">Select where you found this...</option>
+          <option>Reddit</option>
+          <option>Software Review (G2 / Capterra)</option>
+          <option>Customer Interview</option>
+          <option>Job Listing</option>
+          <option>Personal Experience</option>
+          <option>Industry Forum</option>
+          <option>Facebook Group</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Current workaround (how do people solve this today?)</label>
+        <textarea id="f-workaround" placeholder="e.g. Manual spreadsheets, phone calls, word of mouth, expensive consultants, nothing..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="Quotes, dollar amounts mentioned, names, related ideas, anything else relevant..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="score-section">
+        <h3>Decision Framework — Score This Opportunity</h3>
+
+        <div class="criterion">
+          <div class="criterion-q">1. Is the buyer a business (not just a consumer)?</div>
+          <div class="score-options">
+            <div class="score-opt val-1">
+              <input type="radio" name="s1" id="s1-1" value="1" onchange="updateScore()">
+              <label for="s1-1">1 — Consumer<br><small style="color:#94a3b8;font-weight:400">Personal use only</small></label>
+            </div>
+            <div class="score-opt val-2">
+              <input type="radio" name="s1" id="s1-2" value="2" onchange="updateScore()">
+              <label for="s1-2">2 — Mixed<br><small style="color:#94a3b8;font-weight:400">Both consumers & businesses</small></label>
+            </div>
+            <div class="score-opt val-3">
+              <input type="radio" name="s1" id="s1-3" value="3" onchange="updateScore()">
+              <label for="s1-3">3 — Business<br><small style="color:#94a3b8;font-weight:400">Companies or professionals</small></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="criterion">
+          <div class="criterion-q">2. Is this a daily or weekly pain (not occasional)?</div>
+          <div class="score-options">
+            <div class="score-opt val-1">
+              <input type="radio" name="s2" id="s2-1" value="1" onchange="updateScore()">
+              <label for="s2-1">1 — Occasional<br><small style="color:#94a3b8;font-weight:400">Monthly or less</small></label>
+            </div>
+            <div class="score-opt val-2">
+              <input type="radio" name="s2" id="s2-2" value="2" onchange="updateScore()">
+              <label for="s2-2">2 — Weekly<br><small style="color:#94a3b8;font-weight:400">Regular but not daily</small></label>
+            </div>
+            <div class="score-opt val-3">
+              <input type="radio" name="s2" id="s2-3" value="3" onchange="updateScore()">
+              <label for="s2-3">3 — Daily<br><small style="color:#94a3b8;font-weight:400">Part of their daily workflow</small></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="criterion">
+          <div class="criterion-q">3. Are people already spending money to solve this?</div>
+          <div class="score-options">
+            <div class="score-opt val-1">
+              <input type="radio" name="s3" id="s3-1" value="1" onchange="updateScore()">
+              <label for="s3-1">1 — No spend<br><small style="color:#94a3b8;font-weight:400">No tools or budget exists</small></label>
+            </div>
+            <div class="score-opt val-2">
+              <input type="radio" name="s3" id="s3-2" value="2" onchange="updateScore()">
+              <label for="s3-2">2 — Some spend<br><small style="color:#94a3b8;font-weight:400">DIY or small budget</small></label>
+            </div>
+            <div class="score-opt val-3">
+              <input type="radio" name="s3" id="s3-3" value="3" onchange="updateScore()">
+              <label for="s3-3">3 — Active spend<br><small style="color:#94a3b8;font-weight:400">Already paying for tools or people</small></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="criterion">
+          <div class="criterion-q">4. Are existing solutions clearly bad or missing entirely?</div>
+          <div class="score-options">
+            <div class="score-opt val-1">
+              <input type="radio" name="s4" id="s4-1" value="1" onchange="updateScore()">
+              <label for="s4-1">1 — Good tools exist<br><small style="color:#94a3b8;font-weight:400">Well-served market</small></label>
+            </div>
+            <div class="score-opt val-2">
+              <input type="radio" name="s4" id="s4-2" value="2" onchange="updateScore()">
+              <label for="s4-2">2 — Partial solutions<br><small style="color:#94a3b8;font-weight:400">Some tools but clear gaps</small></label>
+            </div>
+            <div class="score-opt val-3">
+              <input type="radio" name="s4" id="s4-3" value="3" onchange="updateScore()">
+              <label for="s4-3">3 — Nothing good<br><small style="color:#94a3b8;font-weight:400">No solution or very poor ones</small></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="criterion">
+          <div class="criterion-q">5. Can you reach these buyers through communities, outreach, or events?</div>
+          <div class="score-options">
+            <div class="score-opt val-1">
+              <input type="radio" name="s5" id="s5-1" value="1" onchange="updateScore()">
+              <label for="s5-1">1 — Hard to reach<br><small style="color:#94a3b8;font-weight:400">No clear channel to buyers</small></label>
+            </div>
+            <div class="score-opt val-2">
+              <input type="radio" name="s5" id="s5-2" value="2" onchange="updateScore()">
+              <label for="s5-2">2 — Some channels<br><small style="color:#94a3b8;font-weight:400">A few ways to find them</small></label>
+            </div>
+            <div class="score-opt val-3">
+              <input type="radio" name="s5" id="s5-3" value="3" onchange="updateScore()">
+              <label for="s5-3">3 — Easy to reach<br><small style="color:#94a3b8;font-weight:400">Clear communities or events</small></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="score-display">
+          <div class="score-number text-muted" id="score-num" style="color:var(--muted)">—</div>
+          <div>
+            <div class="score-label">out of 15</div>
+            <div class="score-verdict" id="score-verdict" style="color:var(--muted)">Score at least one criterion above</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-between">
+        <button class="btn btn-secondary" onclick="resetForm()">Clear Form</button>
+        <button class="btn btn-primary" onclick="saveOpportunity()">Save Pain Point →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: OPPORTUNITIES -->
+  <div class="tab-panel" id="tab-opportunities">
+    <div class="flex-between" style="margin-bottom:20px;">
+      <div class="section-header" style="margin-bottom:0;">
+        <h2>Opportunities</h2>
+        <p>All saved pain points, ranked by score.</p>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="exportCSV()">⬇️ Export CSV</button>
+    </div>
+
+    <div class="filter-bar">
+      <span style="font-size:13px;color:var(--muted);margin-right:4px;">Filter:</span>
+      <button class="filter-btn active" onclick="filterOpp('all', this)">All</button>
+      <button class="filter-btn" onclick="filterOpp('high', this)">🟢 High (12–15)</button>
+      <button class="filter-btn" onclick="filterOpp('medium', this)">🟡 Medium (8–11)</button>
+      <button class="filter-btn" onclick="filterOpp('low', this)">🔴 Low (≤7)</button>
+    </div>
+
+    <div id="opp-list"></div>
+  </div>
+
+  <!-- TAB 4: INTERVIEW SCRIPT -->
+  <div class="tab-panel" id="tab-interview">
+    <div class="section-header">
+      <h2>Interview Script Generator</h2>
+      <p>Generate a customized 7-question customer discovery script for any niche. Run this before you build anything.</p>
+    </div>
+
+    <div class="card">
+      <div class="form-group">
+        <label>Industry or niche you're targeting</label>
+        <input type="text" id="int-industry" placeholder="e.g. Auto Recycling, HVAC contractors, freelance photographers...">
+      </div>
+      <div class="form-group">
+        <label>Specific problem or pain point (optional — makes script more targeted)</label>
+        <input type="text" id="int-problem" placeholder="e.g. finding the best prices for scrap metal, tracking job estimates manually...">
+      </div>
+      <button class="btn btn-primary" onclick="generateScript()">Generate Script</button>
+    </div>
+
+    <div class="script-output" id="script-output">
+      <div class="flex-between" style="margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;">Your Customer Discovery Script</div>
+        <button class="btn btn-secondary btn-sm" id="copy-btn" onclick="copyScript()">📋 Copy Script</button>
+      </div>
+      <div id="script-content"></div>
+      <div class="tip">
+        <strong>Rules for the call:</strong> Don't pitch. Don't describe your product. Talk less than 30% of the time. On question 6, never suggest a number — wait for them to say it. Money is the only real validation.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let opportunities = JSON.parse(localStorage.getItem('pain-points') || '[]');
+  let currentFilter = 'all';
+
+  // ── TAB NAVIGATION ──────────────────────────────────────────
+  function switchTab(btn) {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    if (tab === 'opportunities') renderOpportunities();
+  }
+
+  // ── RESEARCH HUB ─────────────────────────────────────────────
+  function generateLinks() {
+    const kw = document.getElementById('research-keyword').value.trim();
+    const container = document.getElementById('research-links');
+
+    if (!kw) {
+      container.innerHTML = '<div class="tip" style="margin-top:14px;"><strong>How to use:</strong> Type an industry above to generate one-click search links that surface complaints, workarounds, and missing features — the signals that point to a real, buildable problem.</div>';
+      return;
+    }
+
+    const e = encodeURIComponent;
+
+    const sections = [
+      {
+        title: 'Reddit — Community Complaints',
+        links: [
+          { icon: '🗣️', label: 'Search for complaints & frustrations', sub: 'reddit.com', url: `https://www.reddit.com/search/?q=${e(kw + ' problem OR frustrating OR "wish there was" OR "no good way"')}&sort=top&t=year` },
+          { icon: '❓', label: 'Search for "how do I" questions', sub: 'reddit.com', url: `https://www.reddit.com/search/?q=${e(kw + ' "how do I" OR "best way to" OR "anyone know how"')}&sort=top&t=year` },
+          { icon: '📋', label: `Find "${kw}" subreddits`, sub: 'reddit.com', url: `https://www.reddit.com/search/?q=${e(kw)}&type=sr` },
+        ]
+      },
+      {
+        title: 'Software Reviews — What\'s Missing',
+        links: [
+          { icon: '⭐', label: `Search G2 for "${kw}" software`, sub: 'g2.com', url: `https://www.g2.com/search?query=${e(kw)}` },
+          { icon: '⭐', label: `Search Capterra for "${kw}" software`, sub: 'capterra.com', url: `https://www.capterra.com/search/?query=${e(kw)}` },
+        ]
+      },
+      {
+        title: 'Job Boards — Manual Tasks to Automate',
+        links: [
+          { icon: '💼', label: 'Find manual/data entry jobs in this space', sub: 'indeed.com', url: `https://www.indeed.com/jobs?q=${e(kw + ' "data entry" OR "spreadsheet" OR "manual" OR "tracking"')}` },
+          { icon: '💼', label: 'Search LinkedIn for coordinator/analyst roles', sub: 'linkedin.com', url: `https://www.linkedin.com/jobs/search/?keywords=${e(kw + ' coordinator OR analyst OR specialist')}` },
+        ]
+      },
+      {
+        title: 'Web — Forums, Complaints & Gaps',
+        links: [
+          { icon: '🔍', label: 'Google: "no tool for" + missing features', sub: 'google.com', url: `https://www.google.com/search?q=${e('"' + kw + '" "wish there was" OR "no tool for" OR "does anyone know" OR manually')}` },
+          { icon: '🔍', label: 'Google: industry forums & communities', sub: 'google.com', url: `https://www.google.com/search?q=${e(kw + ' forum OR community OR "facebook group" OR association')}` },
+          { icon: '🔍', label: 'Google: negative software reviews', sub: 'google.com', url: `https://www.google.com/search?q=${e(kw + ' software "lacks" OR "missing feature" OR "wish it had" site:g2.com OR site:capterra.com')}` },
+        ]
+      }
+    ];
+
+    let html = '';
+    sections.forEach(section => {
+      html += `<div class="link-section-title">${section.title}</div><div class="research-grid">`;
+      section.links.forEach(link => {
+        html += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="research-link">
+          <span class="icon">${link.icon}</span>
+          <div>
+            <div>${link.label}</div>
+            <div class="link-meta">${link.sub}</div>
+          </div>
+          <span class="arrow">↗</span>
+        </a>`;
+      });
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ── LIVE SCORE ───────────────────────────────────────────────
+  function updateScore() {
+    const vals = [1,2,3,4,5].map(i => {
+      const el = document.querySelector(`input[name="s${i}"]:checked`);
+      return el ? parseInt(el.value) : 0;
+    });
+
+    const total = vals.reduce((a, b) => a + b, 0);
+    const answered = vals.filter(v => v > 0).length;
+    const numEl = document.getElementById('score-num');
+    const verdictEl = document.getElementById('score-verdict');
+
+    if (answered === 0) {
+      numEl.textContent = '—';
+      numEl.style.color = 'var(--muted)';
+      verdictEl.textContent = 'Score at least one criterion above';
+      verdictEl.style.color = 'var(--muted)';
+      return;
+    }
+
+    numEl.textContent = total;
+
+    if (total >= 12) {
+      numEl.style.color = 'var(--success)';
+      verdictEl.textContent = '🟢 High Priority — Worth pursuing';
+      verdictEl.style.color = 'var(--success)';
+    } else if (total >= 8) {
+      numEl.style.color = 'var(--warning)';
+      verdictEl.textContent = '🟡 Medium — Needs more research';
+      verdictEl.style.color = 'var(--warning)';
+    } else {
+      numEl.style.color = 'var(--danger)';
+      verdictEl.textContent = '🔴 Low Priority — Skip or revisit';
+      verdictEl.style.color = 'var(--danger)';
+    }
+  }
+
+  // ── SAVE ─────────────────────────────────────────────────────
+  function saveOpportunity() {
+    const industry = document.getElementById('f-industry').value.trim();
+    const problem = document.getElementById('f-problem').value.trim();
+
+    if (!industry || !problem) {
+      alert('Please fill in at least Industry and the Pain Point description.');
+      return;
+    }
+
+    const scores = [1,2,3,4,5].map(i => {
+      const el = document.querySelector(`input[name="s${i}"]:checked`);
+      return el ? parseInt(el.value) : 0;
+    });
+
+    const opp = {
+      id: Date.now().toString(),
+      industry,
+      problem,
+      source: document.getElementById('f-source').value || 'Not specified',
+      workaround: document.getElementById('f-workaround').value.trim(),
+      notes: document.getElementById('f-notes').value.trim(),
+      scores,
+      totalScore: scores.reduce((a, b) => a + b, 0),
+      dateAdded: new Date().toLocaleDateString()
+    };
+
+    opportunities.unshift(opp);
+    localStorage.setItem('pain-points', JSON.stringify(opportunities));
+    updateCount();
+    resetForm();
+
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-opportunities').classList.add('active');
+    document.querySelectorAll('.tab-btn')[2].classList.add('active');
+    renderOpportunities();
+  }
+
+  function resetForm() {
+    ['f-industry','f-problem','f-workaround','f-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-source').value = '';
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    updateScore();
+  }
+
+  // ── RENDER OPPORTUNITIES ─────────────────────────────────────
+  function renderOpportunities() {
+    const list = document.getElementById('opp-list');
+
+    let filtered = [...opportunities].sort((a, b) => b.totalScore - a.totalScore);
+    if (currentFilter === 'high') filtered = filtered.filter(o => o.totalScore >= 12);
+    else if (currentFilter === 'medium') filtered = filtered.filter(o => o.totalScore >= 8 && o.totalScore < 12);
+    else if (currentFilter === 'low') filtered = filtered.filter(o => o.totalScore < 8);
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="emoji">${opportunities.length === 0 ? '🔍' : '🔎'}</div>
+        <h3>${opportunities.length === 0 ? 'No pain points saved yet' : 'No results for this filter'}</h3>
+        <p>${opportunities.length === 0 ? 'Use the Research Hub to find pain points, then add them here.' : 'Try a different filter.'}</p>
+      </div>`;
+      return;
+    }
+
+    const criteriaLabels = ['Business buyer', 'Daily/weekly', 'Existing spend', 'Bad solution', 'Reachable'];
+
+    list.innerHTML = filtered.map(opp => {
+      const tier = opp.totalScore >= 12 ? 'high' : opp.totalScore >= 8 ? 'medium' : 'low';
+      const badgeCls = `badge-${tier}`;
+      const tierLabel = tier === 'high' ? 'High Priority' : tier === 'medium' ? 'Medium' : 'Low Priority';
+
+      const breakdown = criteriaLabels.map((lbl, i) => {
+        const s = opp.scores[i] || 0;
+        const color = s === 3 ? '#16a34a' : s === 2 ? '#d97706' : s === 1 ? '#dc2626' : '#94a3b8';
+        return `<span class="score-pip"><span style="color:${color};font-weight:700;">${s || '—'}</span>/3 ${lbl}</span>`;
+      }).join('');
+
+      return `<div class="opp-card ${tier}">
+        <div class="opp-score-badge">${opp.totalScore || '?'}</div>
+        <div class="opp-body">
+          <div class="opp-industry">${opp.industry}</div>
+          <div class="opp-problem">${opp.problem}</div>
+          <div class="opp-meta">
+            <span class="badge ${badgeCls}">${tierLabel}</span>
+            &nbsp;· ${opp.source} &nbsp;· ${opp.dateAdded}
+          </div>
+          <div class="opp-detail" id="detail-${opp.id}">
+            <div class="score-breakdown">${breakdown}</div>
+            ${opp.workaround ? `<div class="detail-row"><span class="detail-label">Current workaround: </span>${opp.workaround}</div>` : ''}
+            ${opp.notes ? `<div class="detail-row"><span class="detail-label">Notes: </span>${opp.notes}</div>` : ''}
+          </div>
+        </div>
+        <div class="opp-actions">
+          <button class="btn btn-secondary btn-sm" onclick="toggleDetail('${opp.id}')">Details</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteOpp('${opp.id}')">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleDetail(id) {
+    document.getElementById('detail-' + id).classList.toggle('open');
+  }
+
+  function deleteOpp(id) {
+    if (!confirm('Delete this pain point?')) return;
+    opportunities = opportunities.filter(o => o.id !== id);
+    localStorage.setItem('pain-points', JSON.stringify(opportunities));
+    updateCount();
+    renderOpportunities();
+  }
+
+  function filterOpp(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderOpportunities();
+  }
+
+  function updateCount() {
+    document.getElementById('opp-count').textContent = opportunities.length;
+  }
+
+  // ── EXPORT CSV ───────────────────────────────────────────────
+  function exportCSV() {
+    if (!opportunities.length) { alert('No opportunities to export yet.'); return; }
+    const headers = ['Industry','Problem','Source','Score /15','Priority','Workaround','Notes','Date Added'];
+    const rows = opportunities.map(o => {
+      const tier = o.totalScore >= 12 ? 'High' : o.totalScore >= 8 ? 'Medium' : 'Low';
+      return [o.industry, o.problem, o.source, o.totalScore, tier, o.workaround, o.notes, o.dateAdded]
+        .map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'pain-points.csv';
+    a.click();
+  }
+
+  // ── INTERVIEW SCRIPT ─────────────────────────────────────────
+  function generateScript() {
+    const industry = document.getElementById('int-industry').value.trim();
+    const problem = document.getElementById('int-problem').value.trim();
+    if (!industry) { alert('Please enter an industry or niche first.'); return; }
+
+    const probQ = problem ? `how you handle ${problem}` : 'your biggest day-to-day frustrations';
+    const idealQ = problem ? `solve ${problem}` : 'solve this perfectly';
+
+    const questions = [
+      { q: `Walk me through how you currently handle ${probQ} in your ${industry} business.`, note: "Just listen. Don't suggest anything. You want their actual process in their own words." },
+      { q: `How long does that whole process take you?`, note: 'Quantifies the friction. A specific number reveals the true cost.' },
+      { q: `How often do you feel like you're leaving money on the table — or wasting time — because of this?`, note: 'Surfaces the financial pain. Let them estimate without your help.' },
+      { q: `What tools, software, or workarounds do you currently use? How well do they work?`, note: '"Nothing good" = green light. Also reveals what they\'ve already tried and paid for.' },
+      { q: `If you could ${idealQ} — what would that look like in an ideal world?`, note: 'Let them describe the dream solution. Their exact words become your product description.' },
+      { q: `What would a reliable solution to this be worth to your business per month?`, note: 'THE key question. Do NOT suggest a number. Do NOT fill the silence. Wait.' },
+      { q: `Would you be willing to be a founding customer — pay a small amount now for early access and help shape what it becomes?`, note: 'Money = real commitment. Even $20 proves intent to pay. This is the only true validation.' },
+    ];
+
+    document.getElementById('script-content').innerHTML = questions.map((item, i) => `
+      <div class="question-item">
+        <div class="q-num">${i + 1}</div>
+        <div>
+          <div class="q-text">"${item.q}"</div>
+          <div class="q-note">💡 ${item.note}</div>
+        </div>
+      </div>
+    `).join('');
+
+    document.getElementById('script-output').classList.add('visible');
+  }
+
+  function copyScript() {
+    const industry = document.getElementById('int-industry').value.trim();
+    const problem = document.getElementById('int-problem').value.trim();
+    const probQ = problem ? `how you handle ${problem}` : 'your biggest day-to-day frustrations';
+    const idealQ = problem ? `solve ${problem}` : 'solve this perfectly';
+
+    const text = `CUSTOMER DISCOVERY SCRIPT — ${industry.toUpperCase()}
+RULES: Don't pitch. Don't describe your product. Talk less than 30% of the time. Listen.
+
+1. "Walk me through how you currently handle ${probQ} in your ${industry} business."
+   → Just listen. Don't suggest anything.
+
+2. "How long does that whole process take you?"
+   → Quantifies the friction.
+
+3. "How often do you feel like you're leaving money on the table — or wasting time — because of this?"
+   → Let them estimate the cost without your help.
+
+4. "What tools, software, or workarounds do you currently use? How well do they work?"
+   → "Nothing good" = green light.
+
+5. "If you could ${idealQ} — what would that look like in an ideal world?"
+   → Their exact words become your product description.
+
+6. "What would a reliable solution to this be worth to your business per month?"
+   → KEY: Do NOT suggest a number. Do NOT fill the silence. Wait.
+
+7. "Would you be willing to be a founding customer — pay a small amount now for early access and help shape what it becomes?"
+   → Money = real commitment. This is the only true validation.`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = '📋 Copy Script', 2000);
+    });
+  }
+
+  // ── INIT ─────────────────────────────────────────────────────
+  updateCount();
+  renderOpportunities();
+</script>
+</body>
+</html>
