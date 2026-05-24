@@ -5,6 +5,201 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pain Point Discovery Tool</title>
 <style>
+  /* ── AUTOMATED RESEARCH ADDITIONS ── */
+  .ai-panel {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+    color: white;
+  }
+  .ai-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .ai-panel p { font-size: 13px; opacity: 0.85; margin-bottom: 16px; }
+
+  .ai-row { display: flex; gap: 10px; }
+  .ai-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    color: var(--text);
+  }
+  .btn-white {
+    background: white;
+    color: var(--primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .btn-white:hover { opacity: 0.9; }
+  .btn-white:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .source-badges { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .src-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .src-badge.on  { background: rgba(255,255,255,0.25); color: white; }
+  .src-badge.off { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.5); }
+
+  /* Loading */
+  .ai-loading {
+    display: none;
+    text-align: center;
+    padding: 40px 24px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .ai-loading.visible { display: block; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-steps { font-size: 13px; color: var(--muted); }
+  .loading-steps span { display: none; }
+  .loading-steps span.active { display: inline; }
+
+  /* AI Results */
+  .ai-results { display: none; }
+  .ai-results.visible { display: block; }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .results-header h3 { font-size: 16px; font-weight: 700; }
+  .meta-tag {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .ai-result-card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--border);
+  }
+  .ai-result-card.high   { border-left-color: var(--success); }
+  .ai-result-card.medium { border-left-color: var(--warning); }
+  .ai-result-card.low    { border-left-color: var(--danger); }
+
+  .result-top { display: flex; align-items: flex-start; gap: 14px; }
+  .result-score {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    min-width: 40px;
+    text-align: center;
+    padding-top: 2px;
+  }
+  .high   .result-score { color: var(--success); }
+  .medium .result-score { color: var(--warning); }
+  .low    .result-score { color: var(--danger); }
+
+  .result-body { flex: 1; min-width: 0; }
+  .result-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .result-desc  { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+  .result-evidence {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--muted);
+    border-left: 2px solid var(--border);
+    padding-left: 10px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  .result-why {
+    font-size: 12px;
+    background: #f0fdf4;
+    color: #166534;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  .result-scores { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .r-score-pip {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    font-weight: 500;
+  }
+
+  .result-actions { display: flex; gap: 8px; align-items: center; }
+
+  .btn-save {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-save:hover { background: var(--primary-dark); }
+  .btn-save.saved { background: var(--success); cursor: default; }
+
+  .ai-error {
+    display: none;
+    background: #fef2f2;
+    border: 1.5px solid #fecaca;
+    border-radius: 10px;
+    padding: 16px 20px;
+    color: var(--danger);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .ai-error.visible { display: block; }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+</style>
+<style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
@@ -406,9 +601,49 @@
   <div class="tab-panel active" id="tab-research">
     <div class="section-header">
       <h2>Research Hub</h2>
-      <p>Enter an industry or keyword to generate targeted search links across the best sources for finding pain points.</p>
+      <p>Enter an industry or keyword. Run the AI search for automated results, or use the manual links below to dig deeper.</p>
     </div>
 
+    <!-- AI-POWERED AUTOMATED RESEARCH -->
+    <div class="ai-panel">
+      <h3>AI-Powered Research</h3>
+      <p>Searches Reddit and Hacker News, then uses Claude to extract and score real pain points — automatically.</p>
+      <div class="ai-row">
+        <input type="text" id="ai-keyword" placeholder="e.g. auto recycling, HVAC, freelance photography...">
+        <button class="btn-white" id="ai-run-btn" onclick="runAIResearch()">Run AI Research</button>
+      </div>
+      <div class="source-badges">
+        <span class="src-badge on" id="badge-reddit">● Reddit</span>
+        <span class="src-badge on" id="badge-hn">● Hacker News</span>
+        <span class="src-badge off">○ G2 / Capterra (manual links below)</span>
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div class="ai-loading" id="ai-loading">
+      <div class="spinner"></div>
+      <div class="loading-steps">
+        <span id="step-1">Searching Reddit and Hacker News...</span>
+        <span id="step-2">Analyzing posts with Claude AI...</span>
+        <span id="step-3">Ranking pain points by opportunity score...</span>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="ai-error" id="ai-error"></div>
+
+    <!-- AI RESULTS -->
+    <div class="ai-results" id="ai-results">
+      <div class="results-header">
+        <h3>AI-Ranked Pain Points</h3>
+        <span class="meta-tag" id="results-meta"></span>
+      </div>
+      <div id="ai-results-list"></div>
+    </div>
+
+    <div class="divider">Manual Research Links</div>
+
+    <!-- MANUAL RESEARCH LINKS (existing) -->
     <div class="card">
       <div class="search-row">
         <input type="text" id="research-keyword" placeholder="e.g. auto recycling, HVAC contractors, freelance photographers..." oninput="generateLinks()">
@@ -972,6 +1207,157 @@ RULES: Don't pitch. Don't describe your product. Talk less than 30% of the time.
       setTimeout(() => btn.textContent = '📋 Copy Script', 2000);
     });
   }
+
+  // ── AI RESEARCH ───────────────────────────────────────────────
+  const criteriaLabelsAI = {
+    businessBuyer: 'Business buyer',
+    frequency:     'Daily/weekly',
+    existingSpend: 'Existing spend',
+    badSolution:   'Bad solution',
+    reachable:     'Reachable',
+  };
+
+  async function runAIResearch() {
+    const keyword = document.getElementById('ai-keyword').value.trim();
+    if (!keyword) { alert('Enter an industry or keyword first.'); return; }
+
+    const btn = document.getElementById('ai-run-btn');
+    btn.disabled = true;
+    btn.textContent = 'Searching...';
+
+    document.getElementById('ai-loading').classList.add('visible');
+    document.getElementById('ai-results').classList.remove('visible');
+    document.getElementById('ai-error').classList.remove('visible');
+
+    // Cycle through loading messages
+    const steps = ['step-1','step-2','step-3'];
+    let stepIdx = 0;
+    document.getElementById(steps[0]).classList.add('active');
+    const stepTimer = setInterval(() => {
+      document.getElementById(steps[stepIdx]).classList.remove('active');
+      stepIdx = (stepIdx + 1) % steps.length;
+      document.getElementById(steps[stepIdx]).classList.add('active');
+    }, 3500);
+
+    try {
+      const res = await fetch('/api/research', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Server error — check the terminal running the server.');
+      }
+
+      renderAIResults(data, keyword);
+    } catch (err) {
+      const errEl = document.getElementById('ai-error');
+      errEl.textContent = `Error: ${err.message}`;
+      errEl.classList.add('visible');
+    } finally {
+      clearInterval(stepTimer);
+      steps.forEach(s => document.getElementById(s).classList.remove('active'));
+      document.getElementById('ai-loading').classList.remove('visible');
+      btn.disabled = false;
+      btn.textContent = 'Run AI Research';
+    }
+  }
+
+  function renderAIResults(data, keyword) {
+    const points = data.painPoints || [];
+
+    document.getElementById('results-meta').textContent =
+      `${data.meta?.total || 0} posts analyzed · ${data.meta?.reddit || 0} Reddit · ${data.meta?.hackerNews || 0} HN`;
+
+    const list = document.getElementById('ai-results-list');
+
+    if (points.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="emoji">🔍</div>
+        <h3>No strong pain points found</h3>
+        <p>${data.message || 'Try a broader keyword like "auto recycling" or "HVAC."'}</p>
+      </div>`;
+    } else {
+      list.innerHTML = points
+        .sort((a, b) => b.totalScore - a.totalScore)
+        .map((p, i) => {
+          const tier = p.priority === 'High' ? 'high' : p.priority === 'Medium' ? 'medium' : 'low';
+          const scoreColor = tier === 'high' ? 'var(--success)' : tier === 'medium' ? 'var(--warning)' : 'var(--danger)';
+          const scorePips = Object.entries(p.scores || {}).map(([k, v]) => {
+            const c = v === 3 ? 'var(--success)' : v === 2 ? 'var(--warning)' : 'var(--danger)';
+            return `<span class="r-score-pip"><span style="color:${c};font-weight:700;">${v}</span>/3 ${criteriaLabelsAI[k] || k}</span>`;
+          }).join('');
+
+          return `<div class="ai-result-card ${tier}">
+            <div class="result-top">
+              <div class="result-score">${p.totalScore}</div>
+              <div class="result-body">
+                <div class="result-title">${p.title}</div>
+                <div class="result-desc">${p.description}</div>
+                ${p.evidence ? `<div class="result-evidence">"${p.evidence}"</div>` : ''}
+                ${p.whyItMatters ? `<div class="result-why">💡 ${p.whyItMatters}</div>` : ''}
+                <div class="result-scores">${scorePips}</div>
+                <div class="result-actions">
+                  <button class="btn-save" id="save-ai-${i}" onclick="saveAIResult(${i}, this)" data-result='${JSON.stringify(p).replace(/'/g,"&#39;")}'>
+                    + Save to Opportunities
+                  </button>
+                  <span style="font-size:12px;color:var(--muted);">Source: ${p.sourcePost || 'AI analysis'}</span>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+    }
+
+    document.getElementById('ai-results').classList.add('visible');
+  }
+
+  function saveAIResult(idx, btn) {
+    const raw = btn.getAttribute('data-result');
+    const p = JSON.parse(raw.replace(/&#39;/g, "'"));
+
+    const opp = {
+      id: Date.now().toString() + idx,
+      industry: document.getElementById('ai-keyword').value.trim(),
+      problem: p.description,
+      source: `AI Research — ${p.sourcePost || 'Reddit/HN'}`,
+      workaround: p.evidence ? `Evidence: "${p.evidence}"` : '',
+      notes: p.whyItMatters || '',
+      scores: [
+        p.scores?.businessBuyer || 0,
+        p.scores?.frequency     || 0,
+        p.scores?.existingSpend || 0,
+        p.scores?.badSolution   || 0,
+        p.scores?.reachable     || 0,
+      ],
+      totalScore: p.totalScore,
+      dateAdded: new Date().toLocaleDateString(),
+    };
+
+    opportunities.unshift(opp);
+    localStorage.setItem('pain-points', JSON.stringify(opportunities));
+    updateCount();
+
+    btn.textContent = '✓ Saved';
+    btn.classList.add('saved');
+    btn.disabled = true;
+  }
+
+  // Check server status on load and update Reddit badge
+  fetch('/api/status').then(r => r.json()).then(status => {
+    if (!status.reddit) {
+      document.getElementById('badge-reddit').className = 'src-badge off';
+      document.getElementById('badge-reddit').textContent = '○ Reddit (key not set)';
+    }
+  }).catch(() => {});
+
+  // Allow Enter key on AI search input
+  document.getElementById('ai-keyword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runAIResearch();
+  });
 
   // ── INIT ─────────────────────────────────────────────────────
   updateCount();
